@@ -1,54 +1,43 @@
 import CRUD
 
-CRUD.deleteTables()
-CRUD.createDB()
-CRUD.insertRows()
-
 option = 0
 
-print("\nOlá! Bem-vindo ao Banco de Dados do nosso Campeonato de League Of Legends!")
+print("\nOlá! Bem-vindo ao Banco de Dados do nosso Campeonato de League Of Legends!\n"
+      "Equipe: Gabriela, Italus, Tiago Alexandre")
 
-while option != 3:
-
-    print("\nMenu: \n"
-          "1. Inserir Novos Dados\n"
-          "2. Fazer Consultas\n"
-          "3. Sair")
+while option != 6:
+    print("\n---------------------------")
+    print("Menu: \n"
+          "0. Ver Banco de Dados\n"
+          "1. Criar Tabelas\n"
+          "2. Popular Tabelas\n"
+          "3. Cadastrar novo Jogador\n"
+          "4. Fazer Consultas\n"
+          "5. Deletar todas as tabelas\n"
+          "6. Sair")
+    print("---------------------------")
 
     option = int(input())
 
-    if option == 1:
+    if option == 0:
 
-        print("Inserir: \n")
-        print("0. Novo Jogador\n"
-              "1. Nova Partida\n"
-              "2. Novo Personagem\n"
-              "3. Novo Personagem comprado\n"
-              "4. Novo Time\n"
-              "5. Novo Torneio\n"
-              "6. Sair")
-        writeOpt = int(input())
+        CRUD.readAll()
 
-        #TODO: view da inserção
-        if writeOpt is 0:
-            CRUD.insertRow(0)
-        # elif writeOpt == 1:
-        #
-        # elif writeOpt == 2:
-        #
-        # elif writeOpt == 3:
-        #
-        # elif writeOpt == 4:
-        #
-        # elif writeOpt == 5:
+    elif option == 1:
 
-        elif writeOpt == 6:
-            quit()
-
+        CRUD.createDB()
 
     elif option == 2:
 
-        print("Consultas: \n"
+        CRUD.insertRows()
+
+    elif option == 3:
+
+        CRUD.insertRow(0)
+
+    elif option == 4:
+
+        print("\nConsultas: \n"
           "0. View - Qual o time vencedor no momento?\n"
           "1. Qual o personagem mais comprado do jogo?\n"
           "2. Quais os personagens o jogador de id 1 possui?\n"
@@ -70,10 +59,11 @@ while option != 3:
             CRUD.readTables(4)
         elif readOpt == 5:
             CRUD.readTables(5)
-        elif readOpt == 6:
-            quit()
 
-    elif option == 3:
-         quit()
+    elif option == 5:
+         CRUD.deleteTables()
+
+    elif option == 6:
+        quit()
 
 

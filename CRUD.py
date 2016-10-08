@@ -1,14 +1,32 @@
 import MySQLdb as mdb
 import sys
 
+con = mdb.connect('localhost', 'user', 'goodPassword', 'league')
+
+def readAll():
+    with con:
+        cur = con.cursor()
+
+        cur.execute("SHOW TABLES;")
+        lolbd = cur.fetchall()
+        print("League - Tabelas:")
+        for table in lolbd:
+            print(table[0])
+
+        for table in lolbd:
+            cur.execute("SELECT * FROM "+table[0])
+            print("\nTabela - "+table[0])
+            for row in cur.fetchall():
+                print(row)
+
 def createDB():
     try:
         con = mdb.connect('localhost', 'user', 'goodPassword', 'league');
 
         cur = con.cursor()
 
-        #Criando tabela jogador
-        #cur.execute("DROP TABLE IF EXISTS jogador")
+        # Criando tabela jogador
+        # cur.execute("DROP TABLE IF EXISTS jogador")
         cur.execute("CREATE TABLE `jogador` ( \
                       `jogador_id` int(11) NOT NULL,\
                       `time_id` int(11) DEFAULT NULL,\
@@ -17,8 +35,8 @@ def createDB():
                       `mortes_totais` int(11) DEFAULT NULL\
                     ) ENGINE=MyISAM DEFAULT CHARSET=latin1;")
 
-        #Criando tabela partida
-        #cur.execute("DROP TABLE IF EXISTS partida")
+        # Criando tabela partida
+        # cur.execute("DROP TABLE IF EXISTS partida")
         cur.execute("CREATE TABLE `partida` (\
                       `partida_id` int(11) NOT NULL,\
                       `timeA_id` int(11) DEFAULT NULL,\
@@ -29,23 +47,23 @@ def createDB():
                       `torneio_id` varchar(45) DEFAULT NULL\
                     ) ENGINE=MyISAM DEFAULT CHARSET=latin1;")
 
-        #Criando tabela personagem
-        #cur.execute("DROP TABLE IF EXISTS personagem")
+        # Criando tabela personagem
+        # cur.execute("DROP TABLE IF EXISTS personagem")
         cur.execute("CREATE TABLE `personagem` (\
                       `personagem_id` int(11) NOT NULL,\
                       `personagem_nome` varchar(45) DEFAULT NULL,\
                       `personagem_preco` int(11) DEFAULT NULL\
                     ) ENGINE=MyISAM DEFAULT CHARSET=latin1;")
 
-        #Criando tabela personagem_comprado
-        #cur.execute("DROP TABLE IF EXISTS personagem_comprado")
+        # Criando tabela personagem_comprado
+        # cur.execute("DROP TABLE IF EXISTS personagem_comprado")
         cur.execute("CREATE TABLE `personagem_comprado` (\
                       `personagem_id` int(11) NOT NULL,\
                       `jogador_id` int(11) DEFAULT NULL\
                     ) ENGINE=MyISAM DEFAULT CHARSET=latin1;")
 
-        #Criando tabela time
-        #cur.execute("DROP TABLE IF EXISTS time")
+        # Criando tabela time
+        # cur.execute("DROP TABLE IF EXISTS time")
         cur.execute("CREATE TABLE `time` (\
                       `time_id` int(11) NOT NULL,\
                       `nome_time` varchar(45) DEFAULT NULL,\
@@ -53,14 +71,14 @@ def createDB():
                       `mortes` int(11) DEFAULT NULL\
                     ) ENGINE=MyISAM DEFAULT CHARSET=latin1;")
 
-        #Criando tabela torneio
-        #cur.execute("DROP TABLE IF EXISTS torneio")
+        # Criando tabela torneio
+        # cur.execute("DROP TABLE IF EXISTS torneio")
         cur.execute("CREATE TABLE `torneio` (\
                       `torneio_id` int(11) NOT NULL,\
                       `regiao_torneio` varchar(45) DEFAULT NULL\
                     ) ENGINE=MyISAM DEFAULT CHARSET=latin1;")
 
-        #Criando relacionamentos
+        # Criando relacionamentos
         cur.execute("ALTER TABLE `jogador`\
                       ADD PRIMARY KEY (`jogador_id`);")
 
@@ -93,13 +111,14 @@ def createDB():
                       MODIFY `time_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;")
     except mdb.Error as e:
 
-        print("Error %d: %s" % (e.args[0],e.args[1]))
+        print("Error %d: %s" % (e.args[0], e.args[1]))
         sys.exit(1)
 
     finally:
 
         if con:
             con.close()
+
 
 def readTables(option: int):
     try:
@@ -110,7 +129,7 @@ def readTables(option: int):
         cur.execute("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));")
 
         if option == 0:
-            #View - Atualmente qual o time vencedor? Considere o total de vitorias como o primeiro paramentro, caso empate, o total de abates, caso empate de novo, o que tiver menos mortes
+            # View - Atualmente qual o time vencedor? Considere o total de vitorias como o primeiro paramentro, caso empate, o total de abates, caso empate de novo, o que tiver menos mortes
             cur.execute("SELECT time.nome_time AS Vencedor FROM partida\
                         JOIN time\
                         ON time.time_id = partida.vencedor_id\
@@ -118,20 +137,20 @@ def readTables(option: int):
                         ORDER BY COUNT(*)DESC, time.abates DESC,\
                         time.mortes ASC LIMIT 1")
         if option == 1:
-            #Consulta 1 - Qual o personagem mais comprado do jogo?
+            # Consulta 1 - Qual o personagem mais comprado do jogo?
             cur.execute("SELECT personagem.personagem_nome AS Personagem, COUNT(personagem_comprado.personagem_id) AS Quantia FROM personagem_comprado\
                         JOIN personagem\
                         ON personagem.personagem_id = personagem_comprado.personagem_id\
                         GROUP BY personagem_comprado.personagem_id\
                         ORDER BY Quantia DESC LIMIT 1 ")
         if option == 2:
-            #Consulta 2 - Quais personagens o jogador de id == 1 possui?
-                cur.execute("SELECT personagem.personagem_nome FROM personagem\
+            # Consulta 2 - Quais personagens o jogador de id == 1 possui?
+            cur.execute("SELECT personagem.personagem_nome FROM personagem\
                             JOIN personagem_comprado\
                             ON personagem_comprado.personagem_id = personagem.personagem_id\
                             WHERE personagem_comprado.jogador_id = 1")
         if option == 3:
-            #Consulta 3 - Qual jogador possui mais personagens?
+            # Consulta 3 - Qual jogador possui mais personagens?
             cur.execute("SELECT jogador.nome, COUNT(personagem_comprado.jogador_id) AS Quantidade FROM personagem_comprado\
                         JOIN jogador\
                         ON jogador.jogador_id = personagem_comprado.jogador_id\
@@ -139,7 +158,7 @@ def readTables(option: int):
                         ORDER BY Quantidade DESC LIMIT 1\
                         ")
         if option == 4:
-            #Consulta 4 - Mostre o jogador com mais abates de cada time
+            # Consulta 4 - Mostre o jogador com mais abates de cada time
             cur.execute("SELECT f.nome, time.nome_time, f.abates_totais\
                         FROM (\
                            SELECT jogador.nome, jogador.time_id, max(jogador.abates_totais) AS minprice\
@@ -148,7 +167,7 @@ def readTables(option: int):
                         JOIN time\
                         ON time.time_id = f.time_id")
         if option == 5:
-            #Consulta 5 - Mostre todos os jogadores, seus abates e mortes do time de nome BepidPower
+            # Consulta 5 - Mostre todos os jogadores, seus abates e mortes do time de nome BepidPower
             cur.execute("SELECT time.nome_time, jogador.nome, jogador.abates_totais AS Abates, jogador.mortes_totais AS Mortes FROM time\
                         JOIN jogador\
                         ON time.time_id = jogador.time_id\
@@ -161,7 +180,7 @@ def readTables(option: int):
 
     except mdb.Error as e:
 
-        print("Error %d: %s" % (e.args[0],e.args[1]))
+        print("Error %d: %s" % (e.args[0], e.args[1]))
         sys.exit(1)
 
     finally:
@@ -169,13 +188,13 @@ def readTables(option: int):
         if con:
             con.close()
 
+
 def insertRows():
-     try:
-        con = mdb.connect('localhost', 'user', 'goodPassword', 'league');
+    with con:
 
         cur = con.cursor()
 
-        #Inserindo jogadores
+        # Inserindo jogadores
         cur.execute("INSERT INTO `jogador` (`jogador_id`, `time_id`, `nome`, `abates_totais`, `mortes_totais`) VALUES\
                     (1, 1, 'Italus', 5, 2),\
                     (2, 1, 'Thiago', 10, 7),\
@@ -193,13 +212,13 @@ def insertRows():
                     (17, 3, 'Rodrix', 2, 20),\
                     (18, 3, 'Lalitax', 7, 5);")
 
-        #Inserindo partidas
+        # Inserindo partidas
         cur.execute("INSERT INTO `partida` (`partida_id`, `timeA_id`, `timeB_id`, `abates_timeA`, `abates_timeB`, `vencedor_id`, `torneio_id`) VALUES\
                     (1, 1, 2, 20, 10, 1, '1'),\
                     (2, 2, 3, 30, 15, 2, '1'),\
                     (3, 1, 3, 10, 5, 1, '1');")
 
-        #Inserindo Personagens
+        # Inserindo Personagens
         cur.execute("INSERT INTO `personagem` (`personagem_id`, `personagem_nome`, `personagem_preco`) VALUES\
                     (1, 'Ashe', 1200),\
                     (2, 'Vayne', 2000),\
@@ -212,7 +231,7 @@ def insertRows():
                     (8, 'Morgana', 6300),\
                     (9, 'Kayle', 4500);")
 
-        #Inserindo Personagens_comprados
+        # Inserindo Personagens_comprados
         cur.execute("INSERT INTO `personagem_comprado` (`personagem_id`, `jogador_id`) VALUES\
                     (1, 1),\
                     (2, 1),\
@@ -224,32 +243,125 @@ def insertRows():
                     (1, 3),\
                     (4, 3);")
 
-        #Inserindo Times
+        # Inserindo Times
         cur.execute("INSERT INTO `time` (`time_id`, `nome_time`, `abates`, `mortes`) VALUES\
                     (1, 'BepidPower', 30, 15),\
                     (2, 'AlbusNox', 40, 35),\
                     (3, 'Invocados', 20, 40);")
 
-        #Inserindo Torneio
+        # Inserindo Torneio
         cur.execute("INSERT INTO `torneio` (`torneio_id`, `regiao_torneio`) VALUES\
                     (1, 'Brasil');")
 
-     except mdb.Error as e:
 
-        print("Error %d: %s" % (e.args[0],e.args[1]))
+def insertRow(option: int):
+    print("Nome do Jogador:")
+    nome = str(input())
+    while valueExistsInTable(nome, "nome", "jogador"):
+        print("Jogador já está cadastrado! Deseja corrigir o nome?(s/n)")
+        nome = str(input())
+        if nome == 's':
+            print("Nome do Jogador:")
+            nome = str(input())
+        else:
+            return
+
+    print("Quantidade de Abates:")
+    abates = str(input())
+    print("Quantidade de Mortes")
+    mortes = str(input())
+
+    print("Time:")
+    time = str(input())
+
+    while valueExistsInTable(time, "nome_time", "time") == 0:
+        print("Time não existe! Deseja Cadastrá-lo?(s/n)")
+        opt = str(input())
+        if opt == 's':
+            insertNewTeamNamed(time, abates, mortes)
+            print("Novo time cadastrado!")
+        else:
+            break
+
+    team_id = getTeamID(time)
+
+    insertNewPlayerNamed(nome,abates,mortes,team_id)
+
+
+def insertNewPlayerNamed(name: str, kills: str, deaths: str, teamID: str):
+    with con:
+        cur = con.cursor()
+
+        cur.execute("INSERT INTO `jogador` (`jogador_id`, `time_id`, `nome`, `abates_totais`, `mortes_totais`) VALUES\
+                    ("+str(generateID("jogador", "jogador_id"))+", "+teamID+", '"+name+"', "+kills+", "+deaths+")")
+        cur.execute("SELECT * FROM jogador;")
+
+        rows = cur.fetchall()
+
+        for row in rows:
+            print(row)
+
+
+def insertNewTeamNamed(teamName: str, kills: str, deaths: str):
+    with con:
+        cur = con.cursor()
+
+        cur.execute("INSERT INTO `time` (`time_id`, `nome_time`, `abates`, `mortes`) VALUES\
+                    ("+str(generateID("time", "time_id"))+", '"+teamName+"', "+kills+", "+deaths+")")
+        cur.execute("SELECT * FROM time;")
+
+        rows = cur.fetchall()
+
+        for row in rows:
+            print(row)
+
+def getTeamID(teamName: str):
+    with con:
+
+        cur = con.cursor()
+
+        cur.execute("SELECT time_id, nome_time FROM time")
+
+        rows = cur.fetchall()
+
+        for row in rows:
+            if str(row[1]) == teamName:
+                return str(row[0])
+
+def valueExistsInTable(value: any, column: str, table: str):
+
+    with con:
+        cur = con.cursor()
+
+        cur.execute("SELECT "+column+" FROM "+table)
+        rows = cur.fetchall()
+
+        for row in rows:
+            if str(value) == str(row[0]):
+                return 1
+        return 0
+
+def generateID(entity: str, column: str):
+    try:
+        con = mdb.connect('localhost', 'user', 'goodPassword', 'league');
+        cur = con.cursor()
+        getBiggestId = "SELECT "+column+" FROM " + entity
+        cur.execute(getBiggestId)
+        arrayIDs = cur.fetchall()
+        return int(arrayIDs[len(arrayIDs)-1][0]) + 1
+
+    except mdb.Error as e:
+
+        print("Error %d: %s" % (e.args[0], e.args[1]))
         sys.exit(1)
 
-     finally:
-
+    finally:
         if con:
             con.close()
 
-def insertRow(option: int):
-    print("TODO")
-    #TODO: inserção de novas linhas em cada tabela
 
 def deleteTables():
-     try:
+    try:
         con = mdb.connect('localhost', 'user', 'goodPassword', 'league');
 
         cur = con.cursor()
@@ -267,12 +379,12 @@ def deleteTables():
         for row in rows:
             print(row)
 
-     except mdb.Error as e:
+    except mdb.Error as e:
 
-            print("Error %d: %s" % (e.args[0],e.args[1]))
-            sys.exit(1)
+        print("Error %d: %s" % (e.args[0], e.args[1]))
+        sys.exit(1)
 
-     finally:
+    finally:
 
-            if con:
-                con.close()
+        if con:
+            con.close()
